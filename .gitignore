@@ -1,2 +1,4 @@
 annotator/
 __assets__/
+*.pyc
+__pycache__
