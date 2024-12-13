@@ -119,17 +119,25 @@ def compute_interframe_clip_score(video_path: str) -> Tuple[float, List[float]]:
     
     return average_score, scores
 
-def main():
+def main_interframe():
     """Example usage of the CLIP score computation"""
-    video_path = "example.mp4"
-    text_prompt = "a person walking on the beach"
-    
-    try:
-        avg_score, frame_scores = compute_video_clip_score(video_path, text_prompt)
-        print(f"Average CLIP score: {avg_score:.2f}")
-        print(f"Number of frames processed: {len(frame_scores)}")
-        print(f"Min frame score: {min(frame_scores):.2f}")
-        print(f"Max frame score: {max(frame_scores):.2f}")
+
+    CURR_DIR = os.getcwd()
+    TASK = ''
+    video_dir = os.path.join(CURR_DIR, TASK)
+    clip_scores = []
+
+    for video in os.listdir(video_dir):
+        video_path = os.path.join(video_dir, video)
+        interframe_clip_score, _ = compute_interframe_clip_score(video_path)
+        clip_scores.append(interframe_clip_score)
+
+    mean_clip_score = np.mean(clip_scores)
+    print(f'Task: {TASK}')
+    print(f"Average CLIP score: {mean_clip_score:.2f}")
+    print(f"Number of frames processed: {len(frame_scores)}")
+    print(f"Min frame score: {min(frame_scores):.2f}")
+    print(f"Max frame score: {max(frame_scores):.2f}")
         
     except Exception as e:
         print(f"Error processing video: {str(e)}")
