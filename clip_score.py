@@ -39,17 +39,17 @@ def compute_video_clip_score(video_path: str, text_prompt: str) -> Tuple[float, 
             break
             
         # Convert BGR to RGB and then to PIL Image
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        image = Image.fromarray(frame_rgb)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = Image.fromarray(frame)
         
         # Preprocess and encode frame
-        image_input = preprocess(image).unsqueeze(0).to(device)
+        frame = preprocess(frame).unsqueeze(0).to(device)
         with torch.no_grad():
-            image_features = model.encode_image(image_input)
-            image_features /= image_features.norm(dim=-1, keepdim=True)
+            frame_features = model.encode_image(frame)
+            frame_features /= frame_features.norm(dim=-1, keepdim=True)
             
         # Compute similarity score
-        similarity = (100.0 * image_features @ text_features.T).item()
+        similarity = (100.0 * frame_features @ text_features.T).item()
         frame_scores.append(similarity)
     
     cap.release()
@@ -58,6 +58,66 @@ def compute_video_clip_score(video_path: str, text_prompt: str) -> Tuple[float, 
     average_score = np.mean(frame_scores)
     
     return average_score, frame_scores
+
+
+def compute_interframe_clip_score(video_path: str) -> Tuple[float, List[float]]:
+    """
+    Computes average CLIP score between successive video frames (averaged across |F| -1 frame pairs).
+    
+    Args:
+        video_path (str): Path to the MP4 video file
+    
+    Returns:
+        Tuple[float, List[float]]: (average_score, list of individual frame scores)
+    """
+    # Load CLIP model and preprocessing
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model, preprocess = clip.load("ViT-B/32", device=device)
+
+    # Open video file
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise ValueError(f"Could not open video file: {video_path}")
+
+    scores = []
+    prev_frame = None
+    
+    while True:
+        ret, curr_frame = cap.read()
+        if not ret:
+            break
+
+        if not prev_frame:
+            prev_frame = curr_frame
+            continue
+            
+        # Convert Previous Frame BGR to RGB and then to PIL Image
+        prev_frame = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2RGB)
+        prev_frame = Image.fromarray(prev_frame)
+
+        # Convert Current Frame BGR to RGB and then to PIL Image
+        curr_frame = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2RGB)
+        curr_frame = Image.fromarray(curr_frame)
+        
+        # Preprocess and encode frames
+        prev_frame = preprocess(prev_frame).unsqueeze(0).to(device)
+        curr_frame = preprocess(curr_frame).unsqueeze(0).to(device)
+        with torch.no_grad():
+            curr_frame_features = model.encode_image(curr_frame)
+            prev_frame_features = model.encode_image(prev_frame)
+            curr_frame_features /= curr_frame_features.norm(dim=-1, keepdim=Tprev
+            prev_frame_features /= prev_frame_features.norm(dim=-1, keepdim=True)
+            
+        # Compute similarity score
+        similarity = (100.0 * curr_frame_features @ prev_frame_features.T).item()
+        scores.append(similarity)
+    
+    cap.release()
+    
+    # Compute average score
+    average_score = np.mean(scores)
+    
+    return average_score, scores
 
 def main():
     """Example usage of the CLIP score computation"""
