@@ -23,12 +23,11 @@ def main():
 
     # Ensure output directory exists
     os.makedirs(args.output_dir, exist_ok=True)
-    params = {"t0": 44, "t1": 47 , "motion_field_strength_x" : 12, "motion_field_strength_y" : 12, "video_length": 40}
-
+    params = {"t0": 44, "t1": 47 , "motion_field_strength_x" : 12, "motion_field_strength_y" : 12, "video_length": 8}
     # Process the video for each prompt
     for prompt in prompts:
         sanitized_prompt = "".join(c if c.isalnum() else "_" for c in prompt)[:20]  # Make the filename safe
-        output_path, fps = os.path.join(args.output_dir, f"video_instruct_pix2pix_{sanitized_prompt}.mp4"), 4
+        output_path, fps = os.path.join(args.output_dir, f"video_instruct_pix2pix_{sanitized_prompt}_fps_10.mp4"), 4
         print(f"Processing with prompt: '{prompt}'")
         model.process_text2video(prompt, fps = fps, path = output_path, **params)
 
