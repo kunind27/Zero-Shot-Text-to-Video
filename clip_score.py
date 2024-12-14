@@ -143,4 +143,4 @@ def main_interframe():
         print(f"Error processing video: {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    main_interframe()
