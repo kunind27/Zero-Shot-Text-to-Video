@@ -135,9 +135,9 @@ def main_interframe():
     mean_clip_score = np.mean(clip_scores)
     print(f'Task: {TASK}')
     print(f"Average CLIP score: {mean_clip_score:.2f}")
-    print(f"Number of frames processed: {len(frame_scores)}")
-    print(f"Min frame score: {min(frame_scores):.2f}")
-    print(f"Max frame score: {max(frame_scores):.2f}")
+    print(f"Number of frames processed: {len(clip_scores)}")
+    print(f"Min frame score: {min(clip_scores):.2f}")
+    print(f"Max frame score: {max(clip_scores):.2f}")
         
     except Exception as e:
         print(f"Error processing video: {str(e)}")
